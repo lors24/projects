@@ -51,8 +51,13 @@ ggplot(data_agg, aes(x = EVENT_DT, y = Sales_Rev))+geom_line(colour = "blue") +
 region <- data %>%
   select(EVENT_DT, IND_QTY, LAX_QTY, PHL_QTY, ATL_QTY, DFW_QTY, MCO_QTY) %>%
   gather(AIRPORT, COUNT, - EVENT_DT) %>%
-  group_by(EVENT_DT, AIRPORT) %>%
+  mutate(region = as.factor(gsub("_QTY","",AIRPORT)))%>%
+  group_by(EVENT_DT, region) %>%
   summarise(QTY = sum(COUNT))
 
-ggplot(region, aes(x = EVENT_DT, y = QTY, color = as.factor(AIRPORT)))+geom_line()
+ggplot(region, aes(x = EVENT_DT, y = QTY, color = region))+geom_line()+
+  facet_grid(region~.)+guides(color = F) + ylab("Quantity")+xlab("Date")+
+  scale_x_date(limits=as.Date(c("2017-05-01","2017-05-15")), date_breaks = "2 day", date_labels = "%d %Y")+
+  ggtitle("Título")
+  
   
