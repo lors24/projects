@@ -48,6 +48,8 @@ data_agg <- data %>%
 ggplot(data_agg, aes(x = EVENT_DT, y = Sales_Rev))+geom_line(colour = "blue") +
   geom_line(aes(x = EVENT_DT, y = Sales_Cost), colour = "red")
 
+############# GEOGRAPHIC ANALYSIS #############
+
 region <- data %>%
   select(EVENT_DT, IND_QTY, LAX_QTY, PHL_QTY, ATL_QTY, DFW_QTY, MCO_QTY) %>%
   gather(AIRPORT, COUNT, - EVENT_DT) %>%
@@ -59,16 +61,66 @@ region <- data %>%
 
 ggplot(region, aes(x = EVENT_DT, y = QTY, color = region))+geom_line()+
   facet_grid(region~.)+guides(color = F) + ylab("Quantity")+xlab("Date")+
-  scale_x_date(limits=as.Date(c("2017-05-01","2017-05-15")), date_breaks = "2 day", date_labels = "%d %Y")+
+  scale_x_date(date_breaks = "2 day", date_labels = "%d %Y")+
   ggtitle("Título")+scale_color_manual(values=c('#007dc6','#78b9e7','#76c043','#367c2b','#ffc220','#f47321','#004c91'))
  
 #stacked bar
 
 ggplot(region,aes(x = EVENT_DT, y = QTY, fill = region))+
   geom_bar(stat="identity",position='fill')+
-  scale_x_date(date_breaks = "2 day", date_labels = "%d %Y")+
+  scale_x_date(date_breaks = "3 day", date_labels = "%d %Y")+
   scale_y_continuous(labels = scales::percent)+
   scale_fill_manual(values=c('#007dc6','#78b9e7','#76c043','#367c2b','#ffc220','#f47321','#004c91'))+
   xlab('Date')+ggtitle('Distribution of units sold among regions')+ylab('')+
   theme(
     plot.title = element_text( size=14, face="bold",hjust=0.5))  
+
+ggplot(region,aes(x = EVENT_DT, y = QTY, fill = region))+
+  geom_bar(stat="identity",position='stack')+
+  scale_x_date(date_breaks = "3 day", date_labels = "%d %Y")+
+  #scale_y_continuous(labels = scales::percent)+
+  scale_fill_manual(values=c('#007dc6','#78b9e7','#76c043','#367c2b','#ffc220','#f47321','#004c91'))+
+  xlab('Date')+ggtitle('Distribution of units sold among regions')+ylab('')+
+  theme(
+    plot.title = element_text( size=14, face="bold",hjust=0.5))  
+
+############# ANALYSIS BY DEPARTMENT #############
+
+super.dpt_agg <- data %>%
+  group_by(EVENT_DT, SUPER_DEPT) %>%
+  summarise(SHIPPED_QTY = sum(SHIPPED_QUANTITY),
+            REV = sum(Sales_Rev),
+            COST = sum(Sales_Cost))%>%
+  ungroup() %>%
+  mutate(PROFIT = REV-COST,
+         SUPER_DEPT = as.factor(SUPER_DEPT))
+
+# time series by region
+
+ggplot(super.dpt_agg, aes(x = EVENT_DT, y = SHIPPED_QTY, color = SUPER_DEPT))+geom_line()+
+  facet_grid(SUPER_DEPT~., scales = "free")+guides(color = F) + ylab("Quantity")+xlab("Date")+
+  scale_x_date(date_breaks = "2 day", date_labels = "%d %Y")+
+  ggtitle("Título")+scale_color_manual(values=c('#007dc6','#78b9e7','#76c043','#367c2b','#ffc220','#f47321','#004c91'))
+
+#si quieres que el y axis esté en la misma escala quita el scales = "free" en facet_grid
+
+#stacked bar
+
+ggplot(region,aes(x = EVENT_DT, y = QTY, fill = region))+
+  geom_bar(stat="identity",position='fill')+
+  scale_x_date(date_breaks = "3 day", date_labels = "%d %Y")+
+  scale_y_continuous(labels = scales::percent)+
+  scale_fill_manual(values=c('#007dc6','#78b9e7','#76c043','#367c2b','#ffc220','#f47321','#004c91'))+
+  xlab('Date')+ggtitle('Distribution of units sold among regions')+ylab('')+
+  theme(
+    plot.title = element_text( size=14, face="bold",hjust=0.5))  
+
+ggplot(region,aes(x = EVENT_DT, y = QTY, fill = region))+
+  geom_bar(stat="identity",position='stack')+
+  scale_x_date(date_breaks = "3 day", date_labels = "%d %Y")+
+  #scale_y_continuous(labels = scales::percent)+
+  scale_fill_manual(values=c('#007dc6','#78b9e7','#76c043','#367c2b','#ffc220','#f47321','#004c91'))+
+  xlab('Date')+ggtitle('Distribution of units sold among regions')+ylab('')+
+  theme(
+    plot.title = element_text( size=14, face="bold",hjust=0.5))  
+
