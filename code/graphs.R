@@ -7,6 +7,7 @@ library(lubridate)
 library(ggplot2)
 library(devtools)
 library(stringr)
+library(tidyr)
 
 # data <- read.csv("data.csv", as.is = T)
 # 
@@ -33,3 +34,25 @@ library(stringr)
 # [10:12 AM, 7/18/2017] Eduardo Candela: también puedes hacer una bonita de serie de tiempo, o sea como profit vs time? pero que tenga varias en la misma gráfica, como las 6 lineas de profit vs time por lugar                        
 
 load("data.Rdata")
+
+data <- data %>%
+  mutate(profit = Sales_Rev-Sales_Cost)
+
+data_agg <- data %>%
+  group_by(EVENT_DT) %>%
+  summarise_at(funs(sum), .vars = vars(IND_QTY, LAX_QTY, PHL_QTY, ATL_QTY, DFW_QTY, MCO_QTY, SHIPPED_QUANTITY,
+                 Sales_Rev, Sales_Cost, profit))
+
+#Cost and Revenue time series
+
+ggplot(data_agg, aes(x = EVENT_DT, y = Sales_Rev))+geom_line(colour = "blue") +
+  geom_line(aes(x = EVENT_DT, y = Sales_Cost), colour = "red")
+
+region <- data %>%
+  select(EVENT_DT, IND_QTY, LAX_QTY, PHL_QTY, ATL_QTY, DFW_QTY, MCO_QTY) %>%
+  gather(AIRPORT, COUNT, - EVENT_DT) %>%
+  group_by(EVENT_DT, AIRPORT) %>%
+  summarise(QTY = sum(COUNT))
+
+ggplot(region, aes(x = EVENT_DT, y = QTY, color = as.factor(AIRPORT)))+geom_line()
+  
