@@ -55,9 +55,20 @@ region <- data %>%
   group_by(EVENT_DT, region) %>%
   summarise(QTY = sum(COUNT))
 
+# time series by region
+
 ggplot(region, aes(x = EVENT_DT, y = QTY, color = region))+geom_line()+
   facet_grid(region~.)+guides(color = F) + ylab("Quantity")+xlab("Date")+
   scale_x_date(limits=as.Date(c("2017-05-01","2017-05-15")), date_breaks = "2 day", date_labels = "%d %Y")+
-  ggtitle("Título")
-  
-  
+  ggtitle("Título")+scale_color_manual(values=c('#007dc6','#78b9e7','#76c043','#367c2b','#ffc220','#f47321','#004c91'))
+ 
+#stacked bar
+
+ggplot(region,aes(x = EVENT_DT, y = QTY, fill = region))+
+  geom_bar(stat="identity",position='fill')+
+  scale_x_date(date_breaks = "2 day", date_labels = "%d %Y")+
+  scale_y_continuous(labels = scales::percent)+
+  scale_fill_manual(values=c('#007dc6','#78b9e7','#76c043','#367c2b','#ffc220','#f47321','#004c91'))+
+  xlab('Date')+ggtitle('Distribution of units sold among regions')+ylab('')+
+  theme(
+    plot.title = element_text( size=14, face="bold",hjust=0.5))  
